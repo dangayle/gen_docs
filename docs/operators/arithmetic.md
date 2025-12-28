@@ -4,13 +4,8 @@ Basic mathematical operations for addition, subtraction, multiplication, divisio
 
 ## Addition `+`
 
-**Syntax:**
-```scheme
-; GenExpr
-(+ a b)
-(+ a b c d ...)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 a + b
 a + b + c + d + ...
 ```
@@ -27,18 +22,11 @@ Adds two or more values together.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (+ 5 3);                    ; 8
-sum = (+ in1 in2);                ; Add two inlets
-total = (+ 1 2 3 4 5);            ; Add multiple values
-```
-
-Codebox:
+Examples:
 ```c
-y = 5 + 3;                        // 8
-sum = x1 + x2;                    // Add two inlets
-total = 1 + 2 + 3 + 4 + 5;       // Add multiple values
+out = 5 + 3;                       // 8
+sum = in1 + in2;                   // Add two inlets
+total = 1 + 2 + 3 + 4 + 5;         // Add multiple values
 ```
 
 **Notes:**
@@ -50,17 +38,10 @@ total = 1 + 2 + 3 + 4 + 5;       // Add multiple values
 
 ## Subtraction `-`
 
-**Syntax:**
-```scheme
-; GenExpr
-(- a b)
-(- a)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 a - b
--a
 ```
-
 **Description:**
 Subtracts the second value from the first, or negates a single value.
 
@@ -74,18 +55,11 @@ Subtracts the second value from the first, or negates a single value.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (- 5 3);                    ; 2
-diff = (- in1 in2);               ; in1 minus in2
-negated = (- in);                 ; Negate input
-```
-
-Codebox:
+Examples:
 ```c
-y = 5 - 3;                        // 2
-diff = x1 - x2;                   // x1 minus x2
-negated = -x;                     // Negate input
+out = 5 - 3;                      // 2
+diff = in1 - in2;                 // in1 minus in2
+negated = -in1;                   // Negate input
 ```
 
 **Notes:**
@@ -96,13 +70,8 @@ negated = -x;                     // Negate input
 
 ## Multiplication `*`
 
-**Syntax:**
-```scheme
-; GenExpr
-(* a b)
-(* a b c d ...)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 a * b
 a * b * c * d * ...
 ```
@@ -119,17 +88,10 @@ Multiplies two or more values together.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (* 5 3);                    ; 15
-scaled = (* in scale_factor);      ; Scale input
-product = (* 2 3 4);               ; 24
-```
-
-Codebox:
+Examples:
 ```c
-y = 5 * 3;                        // 15
-scaled = x * scale_factor;        // Scale input
+out = 5 * 3;                      // 15
+scaled = in1 * scale_factor;      // Scale input
 product = 2 * 3 * 4;              // 24
 ```
 
@@ -148,12 +110,8 @@ product = 2 * 3 * 4;              // 24
 
 ## Division `/`
 
-**Syntax:**
-```scheme
-; GenExpr
-(/ a b)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 a / b
 ```
 
@@ -170,18 +128,11 @@ Divides the first value by the second.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (/ 10 2);                   ; 5
-divided = (/ in1 in2);             ; in1 divided by in2
-normalized = (/ in 32768.0);       ; Normalize to [-1, 1]
-```
-
-Codebox:
+Examples:
 ```c
-y = 10 / 2;                       // 5
-divided = x1 / x2;                // x1 divided by x2
-normalized = x / 32768.0;         // Normalize
+out = 10 / 2;                     // 5
+divided = in1 / in2;              // in1 divided by in2
+normalized = in1 / 32768.0;       // Normalize to [-1, 1]
 ```
 
 **Notes:**
@@ -195,23 +146,18 @@ normalized = x / 32768.0;         // Normalize
 - Use multiplication by reciprocal when possible: `a / b ≈ a * (1/b)` if b is constant
 
 **Division by Zero:**
-```scheme
-(/ 1.0 0.0)        ; Returns inf
-(/ 0.0 0.0)        ; Returns nan
-(/ 1 0)            ; May return inf or undefined
+```c
+1.0 / 0.0;   // inf
+0.0 / 0.0;   // nan
+1 / 0;       // inf or undefined
 ```
 
 ---
 
 ## Modulo `%` or `mod`
 
-**Syntax:**
-```scheme
-; GenExpr
-(% a b)
-(mod a b)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 a % b
 mod(a, b)
 ```
@@ -229,18 +175,11 @@ Returns the remainder of a divided by b.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (% 7 3);                    ; 1 (7 mod 3)
-wrapped = (% in 1.0);              ; Keep in 0-1 range
-phase_wrap = (% in twopi);         ; Wrap phase to 0-2π
-```
-
-Codebox:
+Examples:
 ```c
-y = 7 % 3;                        // 1
-wrapped = x % 1.0;                // Keep in 0-1 range
-phase_wrap = x % (2 * pi);        // Wrap phase
+out = 7 % 3;                      // 1
+wrapped = in1 % 1.0;              // Keep in 0-1 range
+phase_wrap = in1 % (2 * pi);      // Wrap phase
 ```
 
 **Notes:**
@@ -250,26 +189,17 @@ phase_wrap = x % (2 * pi);        // Wrap phase
 - **NOT the same as mathematical modulo** for negative numbers
 
 **Modulo vs. Wrap:**
-```scheme
-; Modulo (C-style)
-(% -0.5 1.0)       ; Returns -0.5
-
-; Wrap (always positive)
-(wrap -0.5 0 1)    ; Returns 0.5
+```c
+-0.5 % 1.0;           // -0.5 (C-style remainder)
+wrap(-0.5, 0, 1);     // 0.5 (always positive)
 ```
 
 ---
 
 ## Reverse Subtraction `!-` or `rsub`
 
-**Syntax:**
-```scheme
-; GenExpr
-(!- a b)
-(rsub a b)
-
-; Codebox
-!-(a, b)
+**Syntax (GenExpr & Codebox):**
+```c
 rsub(a, b)
 ```
 
@@ -285,16 +215,10 @@ Subtracts the first value from the second (reverse order).
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (!- in 5);                  ; 5 - in (invert control)
-invert = (!- in1 in2);             ; in2 - in1
-```
-
-Codebox:
+Examples:
 ```c
-y = rsub(x, 5);                   // 5 - x
-invert = rsub(x1, x2);            // x2 - x1
+out = rsub(in, 5);                // 5 - in (invert control)
+invert = rsub(in1, in2);          // in2 - in1
 ```
 
 **Notes:**
@@ -306,14 +230,8 @@ invert = rsub(x1, x2);            // x2 - x1
 
 ## Reverse Division `!/` or `rdiv`
 
-**Syntax:**
-```scheme
-; GenExpr
-(!/ a b)
-(rdiv a b)
-
-; Codebox
-!/(a, b)
+**Syntax (GenExpr & Codebox):**
+```c
 rdiv(a, b)
 ```
 
@@ -329,16 +247,10 @@ Divides the second value by the first (reverse order).
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (!/ scale in);              ; in / scale
-reciprocal = (!/ x 1.0);           ; 1.0 / x
-```
-
-Codebox:
+Examples:
 ```c
-y = rdiv(scale, x);               // x / scale
-reciprocal = rdiv(x, 1.0);        // 1.0 / x
+out = rdiv(scale, in);            // in / scale
+reciprocal = rdiv(in, 1.0);       // 1.0 / in
 ```
 
 **Notes:**
@@ -349,14 +261,8 @@ reciprocal = rdiv(x, 1.0);        // 1.0 / x
 
 ## Reverse Modulo `!%` or `rmod`
 
-**Syntax:**
-```scheme
-; GenExpr
-(!% a b)
-(rmod a b)
-
-; Codebox
-!%(a, b)
+**Syntax (GenExpr & Codebox):**
+```c
 rmod(a, b)
 ```
 
@@ -372,14 +278,9 @@ Returns the remainder of b divided by a (reverse order).
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (!% 3 7);                   ; 7 % 3 = 1
-```
-
-Codebox:
+Examples:
 ```c
-y = rmod(3, 7);                   // 7 % 3 = 1
+out = rmod(3, 7);                 // 7 % 3 = 1
 ```
 
 **Notes:**
@@ -392,12 +293,8 @@ y = rmod(3, 7);                   // 7 % 3 = 1
 
 Single-argument subtraction negates a value.
 
-**Syntax:**
-```scheme
-; GenExpr
-(- x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 -x
 ```
 
@@ -406,16 +303,10 @@ Reverses the sign of a value.
 
 **Examples:**
 
-GenExpr:
-```scheme
-out = (- in);                     ; Negate input
-inverted = (- (+ in offset));      ; Negate sum
-```
-
-Codebox:
+Examples:
 ```c
-y = -x;                           // Negate input
-inverted = -(x + offset);         // Negate sum
+out = -in;                        // Negate input
+inverted = -(in + offset);        // Negate sum
 ```
 
 ---
@@ -431,14 +322,9 @@ Follow standard mathematical precedence:
 
 **Examples:**
 
-```scheme
-; GenExpr
-(+ (* 2 3) 4)                     ; (2 * 3) + 4 = 10
-(* (+ 2 3) 4)                     ; (2 + 3) * 4 = 20
-
-; Codebox
-(2 * 3) + 4                       // 10
-(2 + 3) * 4                       // 20
+```c
+(2 * 3) + 4;   // 10
+(2 + 3) * 4;   // 20
 ```
 
 ---
@@ -459,14 +345,9 @@ Follow standard mathematical precedence:
 
 When mixing int and float:
 
-```scheme
-; GenExpr
-(+ 5 3.0)          ; Result: float (8.0)
-(* 2 4.0)          ; Result: float (8.0)
-
-; Codebox
-5 + 3.0            // Result: float
-2 * 4.0            // Result: float
+```c
+5 + 3.0;           // Result: float (8.0)
+2 * 4.0;           // Result: float (8.0)
 ```
 
 ---

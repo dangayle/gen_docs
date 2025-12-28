@@ -6,14 +6,10 @@ Operators for conditional execution, routing, and selection.
 
 ### Conditional Expression `?`
 
-**Syntax:**
-```scheme
-; GenExpr - functional style
-(? condition true-value false-value)
-(if condition true-value false-value)
-
-; Codebox - C-style
+**Syntax (GenExpr & Codebox):**
+```c
 condition ? true_value : false_value
+// or: if(condition, true_value, false_value)
 ```
 
 **Description:**
@@ -29,28 +25,16 @@ Returns one of two values based on a condition. The ternary operator.
 
 **Examples:**
 
-GenExpr:
-```scheme
-; Simple gate
-(? (> in threshold) in 0)
-
-; Select between two signals
-(? (< in 0) (- in) in)
-
-; Conditional amplification
-(? gate (* in gain) 0)
-```
-
-Codebox:
+Examples (GenExpr & Codebox):
 ```c
 // Simple gate
-y = x > threshold ? x : 0;
+out = (in > threshold) ? in : 0;
 
 // Conditional amplification
-y = gate ? x * gain : 0;
+out = gate ? in * gain : 0;
 
 // Clamp between two values
-y = (x > max) ? max : (x < min) ? min : x;
+out = (x > max) ? max : (x < min) ? min : x;
 ```
 
 ---
@@ -60,11 +44,7 @@ y = (x > max) ? max : (x < min) ? min : x;
 ### Switch `switch`
 
 **Syntax:**
-```scheme
-; GenExpr
-(switch selector case1 case2 case3 ...)
-
-; Codebox
+```c
 switch(selector) {
   case 0: out = value0; break;
   case 1: out = value1; break;
@@ -84,23 +64,13 @@ Selects one of multiple values based on an integer selector.
 
 **Examples:**
 
-GenExpr:
-```scheme
-; 4-way selector
-(switch mode
-  (* in 1.0)        ; mode 0: unity
-  (* in 0.5)        ; mode 1: -6dB
-  (* in 0.25)       ; mode 2: -12dB
-  0)                ; mode 3: mute
-```
-
-Codebox:
+Example:
 ```c
 switch(mode) {
-  case 0: y = x * 1.0; break;
-  case 1: y = x * 0.5; break;
-  case 2: y = x * 0.25; break;
-  case 3: y = 0; break;
+  case 0: out = in * 1.0; break;   // unity
+  case 1: out = in * 0.5; break;   // -6 dB
+  case 2: out = in * 0.25; break;  // -12 dB
+  case 3: out = 0; break;          // mute
 }
 ```
 
@@ -110,13 +80,10 @@ switch(mode) {
 
 ### Gate `gate`
 
-**Syntax:**
-```scheme
-; GenExpr
-(gate input gate-signal [fade-time])
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 gate(input, gate_signal)
+gate(input, gate_signal, fade_time)   // optional fade time in samples
 ```
 
 **Description:**
@@ -132,31 +99,18 @@ Applies an amplitude gate (envelope follower) to a signal.
 
 **Examples:**
 
-GenExpr:
-```scheme
-; Simple on/off gate
-(gate in gate-signal)
-
-; Soft gate (fade time in samples)
-(gate in gate-signal 100)
-```
-
-Codebox:
+Examples:
 ```c
-y = gate(x, gate_signal);
-y = gate(x, gate_signal, 100);
+out = gate(in, gate_signal);
+out = gate(in, gate_signal, 100);   // fade time in samples
 ```
 
 ---
 
 ### Mix `mix`
 
-**Syntax:**
-```scheme
-; GenExpr
-(mix signal1 signal2 mix-amount)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 mix(signal1, signal2, mix_amount)
 ```
 
@@ -173,32 +127,19 @@ Linearly interpolates between two signals based on mix amount.
 
 **Examples:**
 
-GenExpr:
-```scheme
-; Mix between dry and wet
-(mix dry wet mix-amount)
-
-; Equal-power crossfade
-(mix sig1 sig2 mix-amount)
-```
-
-Codebox:
+Examples:
 ```c
-y = mix(dry, wet, mix_amount);
-y = mix(sig1, sig2, mix_amount);
+out = mix(dry, wet, mix_amount);
+out = mix(sig1, sig2, mix_amount);
 ```
 
 ---
 
 ### Selector `selector`
 
-**Syntax:**
-```scheme
-; GenExpr
-(selector index signal1 signal2 signal3 ...)
-
-; Codebox
-selector(index, signal1, signal2, ...)
+**Syntax (GenExpr & Codebox):**
+```c
+selector(index, signal1, signal2, signal3, ...)
 ```
 
 **Description:**
@@ -213,22 +154,16 @@ Selects one of multiple input signals based on an integer index.
 
 **Examples:**
 
-GenExpr:
-```scheme
-; 4-input selector
-(selector input-select in1 in2 in3 in4)
-
-; Select oscillator
-(selector osc-type
-  (* amp (sin phase))
-  (* amp (- (* 2 phase) 1))
-  (* amp (? (> phase 0.5) 1 -1)))
-```
-
-Codebox:
+Examples:
 ```c
-// Select from multiple sources
-y = selector(input_select, in1, in2, in3, in4);
+out = selector(input_select, in1, in2, in3, in4);
+
+// Select oscillator shape
+out = selector(osc_type,
+  amp * sin(phase),
+  amp * ((2 * phase) - 1),
+  amp * ((phase > 0.5) ? 1 : -1)
+);
 ```
 
 ---
@@ -237,12 +172,8 @@ y = selector(input_select, in1, in2, in3, in4);
 
 ### Smooth Step `smoothstep`
 
-**Syntax:**
-```scheme
-; GenExpr
-(smoothstep min max x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 smoothstep(min, max, x)
 ```
 

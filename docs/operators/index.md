@@ -110,62 +110,41 @@ All Gen operators are designed to be real-time safe:
 
 ### Type Inference
 Types are inferred automatically:
-```scheme
-; int + int = int
-x = 5 + 3;          ; Result: int
-
-; int + float = float
-y = 5 + 3.0;        ; Result: float
-
-; float * float = float
-z = 5.0 * 3.0;      ; Result: float
+```c
+x = 5 + 3;        // int + int = int
+y = 5 + 3.0;      // int + float = float
+z = 5.0 * 3.0;    // float * float = float
 ```
 
 ### Operator Overloading
 Many operators work with multiple input types:
 
-```scheme
-min(5, 3);          ; Returns 3 (int)
-min(5.0, 3.0);      ; Returns 3.0 (float)
-max(10, 20, 30);    ; Returns 30 (variadic)
+```c
+min(5, 3);          // 3 (int)
+min(5.0, 3.0);      // 3.0 (float)
+max(10, 20, 30);    // 30 (variadic)
 ```
 
 ## Common Patterns
 
 ### Scaling a Signal
-```scheme
-// GenExpr
+```c
 out = in * scale_factor;
-
-// Codebox
-y = x * scale_factor;
 ```
 
 ### Clamping to Range
-```scheme
-// GenExpr
-out = (min (max in min_val) max_val);
-
-// Codebox
-y = clamp(x, min_val, max_val);
+```c
+out = clamp(in, min_val, max_val);
 ```
 
 ### Conditional Selection
-```scheme
-// GenExpr
-out = (if (> in threshold) in 0);
-
-// Codebox
-y = (x > threshold) ? x : 0;
+```c
+out = (in > threshold) ? in : 0;
 ```
 
 ### Mixing Two Signals
-```scheme
-// GenExpr
-out = (mix in1 in2 mix_amount);
-
-// Codebox
-y = mix(x1, x2, mix_amount);
+```c
+out = mix(in1, in2, mix_amount);
 ```
 
 ## Performance Notes
