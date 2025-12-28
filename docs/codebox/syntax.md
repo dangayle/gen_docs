@@ -266,38 +266,20 @@ if (condition) {
 // temp not directly accessible here
 ```
 
-## Inlets and Outlets
+### Inlets and Outlets
 
 ### Reading Inlets
 
-**Short syntax:**
 ```c
-y = x;              // x is first inlet
-y = x1;             // First inlet (explicit)
-z = x2;             // Second inlet
-```
-
-**Long syntax:**
-```c
-y = in;             // in is first inlet
-y = in1;            // First inlet
-z = in2;            // Second inlet
+out = in;              // in (or in1) is first inlet
+z = in2;               // Second inlet
 ```
 
 ### Writing Outlets
 
-**Short syntax:**
 ```c
-y = value;          // y is first outlet
-y1 = value1;        // First outlet (explicit)
-y2 = value2;        // Second outlet
-```
-
-**Long syntax:**
-```c
-out = value;        // out is first outlet
-out1 = value1;      // First outlet
-out2 = value2;      // Second outlet
+out = value;           // out (or out1) is first outlet
+out2 = value2;         // Second outlet
 ```
 
 ### Automatic Creation
@@ -306,7 +288,7 @@ Inlets and outlets are created automatically:
 
 ```c
 // This creates 2 inlets and 1 outlet
-y = x1 + x2;
+out = in1 + in2;
 ```
 
 ## Parameters

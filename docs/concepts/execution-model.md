@@ -1,152 +1,71 @@
 # Execution Model
 
-Gen code executes in distinct phases. Understanding these phases is critical for writing correct Gen code and knowing when certain operations are allowed.
+Gen code runs per-sample at audio rate. There is no user-exposed “init” phase separate from the main execution; any constants are evaluated by the compiler, and runtime code executes for each sample.
 
-## Execution Phases
-
-### Phase 1: Initialization (Init)
-
-**When:** Once, when the Gen patcher compiles or when explicitly triggered
+## Audio-Rate Execution
 
 **Characteristics:**
-- Runs once before audio processing begins
-- Can perform setup computations
-- Can allocate memory and initialize state
-- Runs at control rate (not audio rate)
-
-**Allowed operations:**
-- Variable initialization
-- Parameter declarations
-- State setup
-
-**Example:**
-```scheme
-; Initialization happens here
-scale = 1.0 / max(input_range, 0.001);
-
-; Main computation
-out = in * scale;
-```
-
-### Phase 2: Audio Rate (Per-Sample or Per-Block)
-
-**When:** For each audio sample (or block of samples) being processed
-
-**Characteristics:**
-- Runs repeatedly during audio playback
-- Must be fast - it's called at audio rate
-- No expensive operations
-- Cannot allocate memory
-- Cannot perform I/O
+- Runs for every sample (or block-expanded by the host)
+- Must be real-time safe: no dynamic allocation or blocking I/O
+- Uses fixed, bounded control flow
 
 **Allowed operations:**
 - Read inputs (`in`, `in1`, `in2`, ...)
 - Perform computations
 - Write outputs (`out`, `out1`, `out2`, ...)
-- Update state
+- Update state via `history`/delay operators
 
 **Example:**
-```scheme
-; This runs for EVERY sample
-filtered = input * gain + (previous_output * feedback);
-y = filtered;
+```c
+filtered = in1 * gain + history(0) * feedback;
+out = filtered;
 ```
-
 ## Inlet and Outlet Semantics
 
 ### Inlets
 
-Inlets (`in`, `in1`, `in2`, ...) provide:
-- Current input value at the current sample
-- Read-only access
-- Synchronized with Max's message and audio timing
+Inlets (`in`, `in1`, `in2`, ...) provide the current sample value (read-only) aligned to the DSP vector.
 
-**GenExpr syntax:**
-```scheme
-; Read from inlets (multiple syntaxes)
-value = in;        ; First inlet
-value = in1;       ; First inlet (explicit)
-x = in2;           ; Second inlet
-```
-
-**Codebox syntax:**
 ```c
-// Alternative inlet naming
-y = x;             ; x is first inlet
-y = x1;            ; First inlet (explicit)
-z = x2;            ; Second inlet
+value = in1;       // First inlet
+x = in2;           // Second inlet
 ```
 
 ### Outlets
 
-Outlets (`out`, `out1`, `out2`, ...) are where you write output values:
+Outlets (`out`, `out1`, `out2`, ...) are written per-sample:
 
-**GenExpr:**
-```scheme
-out = computed_value;      ; Write to first outlet
-out1 = value1;
-out2 = value2;
-```
-
-**Codebox:**
 ```c
-y = computed_value;        ; y is first outlet
-y1 = value1;
-y2 = value2;
+out = computed_value;      // First outlet
+out2 = another_value;      // Second outlet
 ```
 
 ### Automatic Inlet/Outlet Creation
 
-The `expr` and `codebox` operators automatically create inlets and outlets based on what you reference:
+Inlets and outlets are created automatically based on what you reference:
 
-```scheme
-; This code automatically creates:
-; - 2 inlets (because in1 and in2 are used)
-; - 1 outlet (because out is assigned)
-
-out = in1 + in2;
+```c
+out = in1 + in2;   // creates two inlets and one outlet
 ```
 
 ## State and History
 
 ### Variables and State
 
-Variables persist across samples within the same block:
+Plain variables do not persist sample-to-sample. Use `history` (or related operators) to carry state:
 
-```scheme
-; This variable persists across iterations
-accumulator = 0;
-
-; This will accumulate over samples
-for (i = 0; i < 10; i += 1) {
-  accumulator += input[i];  ; Pseudo-code
-}
+```c
+prev = history(0);
+out = in1 - prev;
 ```
 
 ### History: Accessing Previous Values
 
 Gen provides `history()` for accessing previous sample values:
 
-```scheme
-; Simple one-sample delay
-previous = history(input, 1);    ; Get previous sample
-y = previous;
-```
-
-**History syntax:**
-```scheme
-past_value = history(signal, N);     ; Get N samples back
-```
-
-Where:
-- `signal` - The signal to access
-- `N` - Number of samples back (1 = last sample, 2 = two samples ago)
-
-**Example - Simple highpass filter:**
-```scheme
-; Difference equation: y[n] = x[n] - x[n-1]
-previous = history(x, 1);
-y = x - previous;
+```c
+previous = history(in1, 1);   // Get previous sample
+out = in1 - previous;         // One-sample differentiator
 ```
 
 ## Timing and Synchronization
@@ -171,13 +90,11 @@ Gen inherits Max's sample rate:
 
 Parameters (declared with `param` keyword) can change:
 
-```scheme
+```c
 param frequency(440.0);
 param resonance(1.0);
 
-; frequency and resonance can be changed from outside
-; without recompiling
-y = sin(x * frequency) * resonance;
+out = sin(in * frequency) * resonance;
 ```
 
 ### Parameter Update Rate
@@ -197,7 +114,7 @@ y = sin(x * frequency) * resonance;
 - Perform unbounded loops
 
 **Can do:**
-- Fixed-size loops
+- Fixed-size loops (Codebox only)
 - Arithmetic operations
 - Trigonometric functions
 - History/delay lookups
@@ -210,13 +127,9 @@ y = sin(x * frequency) * resonance;
 - No dynamic allocation
 
 **Example:**
-```scheme
-; These are allocated once at compile time
-buffer_size = 1024;
-scaling_factor = 1.0 / buffer_size;
-
-; Safe to use at audio rate
-out = in * scaling_factor;
+```c
+scale = 1.0 / 2.0;
+out = in1 * scale;   // Uses compile-time constant, no dynamic allocation
 ```
 
 ## Real-Time Safety
@@ -230,24 +143,16 @@ Gen objects are **real-time safe** by design:
 
 This allows Gen code to process audio reliably without dropouts or glitches.
 
-## Example: Complete Lifecycle
+## Example: Per-Sample Processing
 
-```scheme
-; INITIALIZATION PHASE
-; Happens once when Gen patcher loads
+```c
 param frequency(440.0);
 param amplitude(1.0);
-phase = 0;
 
-; AUDIO RATE PHASE
-; Happens for each sample
+phase = history(0);
 out = sin(phase) * amplitude;
-phase += frequency / samplerate;
-
-; Handle phase wrapping
-if (phase > 1.0) {
-  phase -= 1.0;
-}
+phase = phase + frequency / samplerate;
+phase = (phase > 1.0) ? (phase - 1.0) : phase;
 ```
 
 ## Related Topics

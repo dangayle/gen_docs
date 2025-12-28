@@ -26,17 +26,16 @@ Codebox and GenExpr are **functionally equivalent** - both compile to the same o
 
 ### Inlets and Outlets
 
-Like GenExpr, Codebox uses inlet/outlet syntax:
+Codebox uses the same inlet/outlet names as GenExpr:
 
 ```c
 // Read from inlets, write to outlets
-y = x + 5;         // x is from inlet, y goes to outlet (by default)
+out = in + 5;         // in (or in1) is the first inlet, out/out1 is the first outlet
 ```
 
-Special keywords:
-- `x`, `x1`, `x2`, ... - Inlet variables (read-only references to inlet values)
-- `y`, `y1`, `y2`, ... - Outlet variables (write to outlets)
-- Alternative syntax: `in`, `in1`, `in2`, ... and `out`, `out1`, `out2`, ...
+Keywords:
+- `in` / `in1`, `in2`, ... - Inlet variables (read-only)
+- `out` / `out1`, `out2`, ... - Outlet variables (write)
 
 ### Simple Assignments
 

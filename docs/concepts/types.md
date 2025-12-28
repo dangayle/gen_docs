@@ -18,12 +18,7 @@ Gen uses automatic type inference to determine variable types during compilation
 - Literals: `5.0`, `3.14`, `1e-5`
 - Used for: Audio samples, continuous values, trigonometric results
 
-### Signal Types
-
-**signal**
-- Vector of audio samples processed at block rate
-- Size depends on Gen object's block size
-- Used for: Audio processing, multi-sample operations
+Gen processes single-sample values at audio rate; there is no separate "signal vector" type exposed in GenExpr/Codebox. All math operates on per-sample floats or ints.
 
 ## Type Inference
 
@@ -50,11 +45,11 @@ Gen infers types automatically based on:
 
 ## Type Coercion (Promotion)
 
-When combining different types, Gen **promotes** to the wider type:
+When combining different types, Gen **promotes** to the wider numeric type:
 
 **Hierarchy (narrow → wide):**
 ```
-int → float → signal
+int → float
 ```
 
 ### Examples
@@ -110,27 +105,7 @@ b = a / 2.0;              ; Division by float forces float result
 
 ## Variables and Type Determination
 
-Variables gain their type on first assignment:
-
-```scheme
-x = 5;            ; x becomes int
-x = 5.0;          ; ERROR: Can't reassign different type
-
-y = 5;            ; y becomes int
-z = y + 1.0;      ; z is float (promoted from int + float)
-```
-
-### Inference from Usage
-
-The compiler can infer type from subsequent operations:
-
-```scheme
-result = sqrt(x);         ; result becomes float (sqrt always returns float)
-index = 0;
-while (index < 10) {      ; index remains int (comparison doesn't change type)
-  index += 1;
-}
-```
+Variables are inferred from their first assignment, but reassigning with a different numeric width is allowed when the expression requires it (e.g., adding a float promotes the result). The compiler determines the needed type for each expression.
 
 ## Function Parameters and Return Types
 

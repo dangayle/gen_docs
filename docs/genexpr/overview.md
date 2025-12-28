@@ -1,66 +1,63 @@
 # GenExpr Language Overview
 
-GenExpr is the internal language used by Gen patchers. It is a functional, expression-oriented language designed to describe computations in an implementation-agnostic manner. GenExpr code is translated into optimized machine code for execution on the CPU.
+GenExpr is the internal textual language used by Gen patchers. It is a compact, expression-oriented, C-like syntax that describes sample-by-sample computations. GenExpr code is compiled to optimized machine code for execution at audio rate.
 
 ## What is GenExpr?
 
-GenExpr provides a **textual alternative** to the visual patching paradigm of Max. You write code in text form that expresses the same computations you would create by patching object boxes together.
+GenExpr provides a **textual alternative** to the visual patching paradigm of Max. You write expressions that mirror the wiring you would build with Gen objects, but in a linear text form.
 
 **Key characteristics:**
-- **Expression-oriented** - Emphasis on composing expressions
-- **Type-less** - Variables gain types automatically through inference
-- **Compiled** - Code is compiled to optimized C before execution
-- **Functional** - Built-in operators work like functions
+- **Expression-oriented** - Statements are primarily assignments and operator calls
+- **C-like syntax** - Infix operators, semicolons, and braces for blocks where supported
+- **Type inference** - Numeric types are inferred from use
+- **Compiled** - Generates optimized code for real-time audio
 
 ## When to Use GenExpr
 
 Use GenExpr when:
-- You need to express complex logic concisely
-- You're combining many operators
-- You prefer textual over visual representation
-- You want to reuse code through functions
+- You need concise, per-sample math and signal expressions
+- You want a text view of what would otherwise be many operator boxes
+- You prefer infix operator syntax without full imperative constructs
 
-Compare to using the `expr` operator or `codebox` for simpler, more imperative approaches.
+Use Codebox when you need imperative control flow (`for`, `while`, `break/continue`) or a more general C-like programming style.
 
 ## Basic Concepts
 
 ### Inlets and Outlets
 
-GenExpr respects Max's concepts of inlets and outlets:
+GenExpr uses explicit inlet/outlet symbols:
 
-```scheme
-; in and in1, in2, ... reference inlets
-; out and out1, out2, ... reference outlets
-
-out = in1 + in2
+```c
+// in/out (or in1/out1) are the first inlet/outlet
+out = in1 + in2;
 ```
 
-Special keywords:
-- `in` / `in1`, `in2`, ... - Inlet references (input values)
-- `out` / `out1`, `out2`, ... - Outlet references (output assignments)
+Keywords:
+- `in` / `in1`, `in2`, ... - Inlet references (read-only)
+- `out` / `out1`, `out2`, ... - Outlet assignments (write-only per sample)
 
 ### Simple Expressions
 
-A single expression implicitly assigns to the first outlet:
+A single expression that assigns to `out` writes to the first outlet:
 
-```scheme
-in * 2                    ; Same as: out1 = in * 2
+```c
+out = in * 2;
 ```
 
-Multiple statements require semicolons:
+Multiple statements are separated by semicolons:
 
-```scheme
+```c
 x = in1 * 2;
 y = in2 + 1;
-out = x + y
+out = x + y;
 ```
 
 ### Parameters
 
 Parameters in GenExpr behave like `param` object boxes:
 
-```scheme
-param amplitude(0.5);      ; Create a parameter with default 0.5
+```c
+param amplitude(0.5);      // Default 0.5
 out = in * amplitude;
 ```
 
@@ -68,58 +65,52 @@ out = in * amplitude;
 
 ### Multiple Return Values
 
-Some operations return multiple values. Use tuple-style assignment:
+Some operators return multiple values. Use comma assignment to capture them:
 
-```scheme
-r, theta = cartopol(x, y)    ; cartopol returns 2 values
+```c
+r, theta = cartopol(x, y);    // cartopol returns 2 values
 ```
 
-If you only need one value, the others are optimized away:
+If you only bind one target, unused values are discarded:
 
-```scheme
-r = cartopol(x, y)           ; theta calculation is eliminated
+```c
+r = cartopol(x, y);           // theta is dropped
 ```
 
 ### Control Flow
 
-GenExpr supports branching and looping:
+GenExpr provides expression-level selection, not full imperative loops. Use ternary or the `if` operator:
 
-```scheme
-if (x > 0.5) {
-  out = cos(x * pi);
-} else {
-  out = sin(x * pi);
-}
+```c
+out = (x > 0.5) ? cos(x * pi) : sin(x * pi);
+// or
+out = if(x > 0.5, cos(x * pi), sin(x * pi));
 ```
 
 ### Function Definitions
 
-Define reusable functions:
+GenExpr supports simple function definitions with C-like syntax:
 
-```scheme
-f(a, b) {
-  a + b
+```c
+sum(a, b) {
+  return a + b;
 }
 
-out = f(in1, in2)
+out = sum(in1, in2);
 ```
 
-Functions support:
-- Multiple parameters
-- Multiple return values
-- Attributes (like `param` objects)
-- Scope isolation
+Functions are inlined by the compiler and share the global scope of the Gen program. Recursion and unbounded control flow are not supported.
 
 ### Comments
 
 GenExpr uses C-style comments:
 
-```scheme
+```c
 // Single-line comment
 x = in1 + in2;  // Inline comment
 
 /* Multi-line comment
-   spanning multiple lines */
+  spanning multiple lines */
 ```
 
 ## GenExpr vs. Codebox
@@ -127,34 +118,26 @@ x = in1 + in2;  // Inline comment
 | Feature | GenExpr | Codebox |
 |---------|---------|---------|
 | **Style** | Expression-oriented | Imperative/C-like |
-| **Syntax** | Scheme-like, functional | C-like |
-| **Best for** | Complex expressions | Complex logic & loops |
-| **Performance** | Same (both compiled) | Same (both compiled) |
-| **Ease** | Good for formula-based | Good for procedural code |
+| **Syntax** | C-like expressions | Full C-like statements & loops |
+| **Best for** | Formula-driven DSP | Procedural logic & loops |
+| **Performance** | Same (compiled) | Same (compiled) |
+| **Control flow** | Expression selection (`? :`, `if`) | `if/else`, `for`, `while`, `break/continue` |
 
 ## Type System
 
-GenExpr is **type-less** at the syntax level. Types are inferred by the compiler:
+GenExpr is **type-inferred** at compile time:
 
-```scheme
-x = 5;        ; int inferred
-y = 5.0;      ; float inferred
-z = x + y;    ; result is float (type promotion)
+```c
+x = 5;        // int inferred
+y = 5.0;      // float inferred
+z = x + y;    // result promoted to float
 ```
 
-See [Type System](../concepts/types.md) for complete details on type coercion and conversion.
+See [Type System](../concepts/types.md) for coercion and promotion rules.
 
 ## Compilation and Execution
 
-GenExpr code goes through these stages:
-
-1. **Parse** - Syntax analysis
-2. **Analyze** - Type inference and operator resolution
-3. **Optimize** - Dead code elimination, strength reduction
-4. **Compile** - Generate C code
-5. **Execute** - Run compiled code at audio/sample rate
-
-This happens automatically when you edit GenExpr code in a Gen patcher.
+GenExpr code is parsed, type-inferred, optimized, and compiled to machine code automatically when you edit a Gen patcher. The compiled code runs per-sample at audio rate.
 
 ## Common Patterns
 
@@ -181,14 +164,12 @@ if (in > threshold) {
 
 ### Accumulating Values (State)
 
-```scheme
-// Note: for state management, use history() or dedicated constructs
-// This is a basic example of flow control
-accumulator = 0;
-for (i = 0; i < 10; i += 1) {
-  accumulator += i;
-}
-out = accumulator;
+Use `history` (or related delay operators) for state across samples:
+
+```c
+accum = history(0);
+accum = accum + in;
+out = accum;
 ```
 
 ## Next Steps
