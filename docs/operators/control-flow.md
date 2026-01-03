@@ -189,20 +189,9 @@ Hermite smooth step interpolation between min and max. Returns 0 below min, 1 ab
 - Smooth interpolation from 0 to 1
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Smooth envelope from 0 to 1 ms
-(smoothstep 0 samplerate x)
-
-; Smooth threshold detection
-(smoothstep (- threshold 0.1) (+ threshold 0.1) in)
-```
-
-Codebox:
 ```c
-// Smooth transition
-y = smoothstep(min, max, x);
+envelope = smoothstep(0, samplerate, x);                 // smooth envelope over 1s
+soft_gate = smoothstep(threshold - 0.1, threshold + 0.1, in); // soften threshold
 ```
 
 ---
@@ -211,13 +200,9 @@ y = smoothstep(min, max, x);
 
 ### Send `send`
 
-**Syntax:**
-```scheme
-; GenExpr
-(send name value)
-
-; Codebox
-send(name, value)
+**Syntax (GenExpr & Codebox):**
+```c
+send(name, value);
 ```
 
 **Description:**
@@ -231,34 +216,19 @@ Sends a value to another Gen object with the matching receive name.
 - The value (for chaining)
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Send LFO frequency
-(send lfo-freq (* phase freq-control))
-
-; Send control value
-(send filter-cutoff cutoff-param)
-```
-
-Codebox:
 ```c
-send(lfo_freq, phase * freq_control);
-send(filter_cutoff, cutoff_param);
+send(lfo_freq, phase * freq_control);     // send LFO frequency
+send(filter_cutoff, cutoff_param);        // send control value
 ```
 
 ---
 
 ### Receive `receive`
 
-**Syntax:**
-```scheme
-; GenExpr
-(receive name [default])
-
-; Codebox
-receive(name)
-receive(name, default)
+**Syntax (GenExpr & Codebox):**
+```c
+receive(name);
+receive(name, default_value);
 ```
 
 **Description:**
@@ -272,21 +242,9 @@ Receives a value from another Gen object with the matching send name.
 - Received value
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Receive LFO frequency
-lfo-freq = (receive lfo-freq 1)
-
-; Receive with default
-feedback = (receive feedback-amount 0.5)
-```
-
-Codebox:
 ```c
-// Receive from another object
-lfo_freq = receive(lfo_freq);
-lfo_freq = receive(lfo_freq, 1); // Default: 1
+lfo_freq = receive(lfo_freq, 1);       // receive with default
+feedback = receive(feedback_amount, 0.5);
 ```
 
 ---
@@ -294,88 +252,53 @@ lfo_freq = receive(lfo_freq, 1); // Default: 1
 ## Common Patterns
 
 ### Simple Conditional Gate
-```scheme
-; GenExpr
-(? (> in threshold) in 0)
-
-; Codebox
-y = x > threshold ? x : 0;
+```c
+out = (in > threshold) ? in : 0;
 ```
 
 ### Soft Gate with Fade
-```scheme
-; GenExpr
-(gate in gate-signal fade-samples)
-
-; Codebox
-y = gate(x, gate_signal, fade_samples);
+```c
+out = gate(in, gate_signal, fade_samples);
 ```
 
 ### Wet/Dry Mix
-```scheme
-; GenExpr
-(mix (+ in (* feedback feedback-amt)) in mix-amt)
-
-; Codebox
-y = mix(x + feedback * feedback_amt, x, mix_amt);
+```c
+out = mix(in + feedback * feedback_amt, in, mix_amt);
 ```
 
 ### Oscillator Selection
-```scheme
-; GenExpr
-(selector osc-type
-  (* amp (sin (* phase twopi)))
-  (* amp (- (* phase 2) 1))
-  (* amp (? (> phase 0.5) 1 -1)))
-
-; Codebox
-switch(osc_type) {
-  case 0: y = amp * sin(phase * twopi); break;
-  case 1: y = amp * (phase * 2 - 1); break;
-  case 2: y = amp * (phase > 0.5 ? 1 : -1); break;
+```c
+switch (osc_type) {
+  case 0: out = amp * sin(phase * twopi); break;
+  case 1: out = amp * (phase * 2 - 1); break;
+  case 2: out = amp * (phase > 0.5 ? 1 : -1); break;
 }
 ```
 
 ### Smooth Envelope Transition
-```scheme
-; GenExpr
-; Fade in over 100ms
-envelope = (smoothstep 0 samplerate x)
-
-; Codebox
-envelope = smoothstep(0, samplerate, x);
+```c
+envelope = smoothstep(0, samplerate, x);   // fade in over 1s
 ```
 
 ### Inter-Object Communication
-```scheme
-; Sender object
-(send freq-out current-frequency)
-(send gate-out gate-signal)
+```c
+// Sender object
+send(freq_out, current_frequency);
+send(gate_out, gate_signal);
 
-; Receiver object
-freq = (receive freq-in 440)
-gate = (receive gate-in 0)
+// Receiver object
+freq = receive(freq_in, 440);
+gate = receive(gate_in, 0);
 ```
 
 ### Spectral-Safe Switch
-```scheme
-; GenExpr
-; Switch oscillators without clicks
-(mix
-  (selector osc-select
-    (sin phase)
-    (- (* 2 phase) 1)
-    (? (> phase 0.5) 1 -1))
-  previous-osc
-  0.01)
-
-; Codebox
-switch(osc_select) {
+```c
+switch (osc_select) {
   case 0: osc = sin(phase); break;
   case 1: osc = phase * 2 - 1; break;
   case 2: osc = phase > 0.5 ? 1 : -1; break;
 }
-y = mix(osc, previous_osc, 0.01);
+out = mix(osc, previous_osc, 0.01);   // small crossfade to avoid clicks
 ```
 
 ---

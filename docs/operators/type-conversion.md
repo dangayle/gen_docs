@@ -2,303 +2,147 @@
 
 Explicit conversion between numeric types.
 
-## Integer Conversion
+## Integer Conversion `int`
 
-### Cast to Integer `int`
-
-**Syntax:**
-```scheme
-; GenExpr
-(int x)
-(int-bits x)      ; Raw bit interpretation
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 int(x)
 ```
 
 **Description:**
-Converts a value to integer type by truncating the fractional part (rounding toward zero).
-
-**Parameters:**
-- `x` - Input value (float or int)
-
-**Returns:**
-- Integer value
+Converts to integer by truncating the fractional part (toward zero).
 
 **Examples:**
-
-GenExpr:
-```scheme
-(int 3.7)         ; 3
-(int -2.3)        ; -2 (toward zero)
-(int (/ 5 2))     ; 2 (integer division result)
-```
-
-Codebox:
 ```c
-int(3.7)          // 3
-int(-2.3)         // -2
-int(5 / 2)        // 2
+int(3.7);          // 3
+int(-2.3);         // -2
+int(5 / 2);        // 2 (integer division result)
 ```
 
 **Notes:**
 - Truncates toward zero (different from floor)
-- Implicit conversion often happens automatically
-- Explicit int() forces type conversion
+- Explicit `int()` forces conversion when precision matters
 
 ---
 
-## Float Conversion
+## Float Conversion `float`
 
-### Cast to Float `float`
-
-**Syntax:**
-```scheme
-; GenExpr
-(float x)
-(float-bits x)    ; Raw bit interpretation
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 float(x)
 ```
 
 **Description:**
-Converts a value to float type explicitly. Allows precision in arithmetic operations.
-
-**Parameters:**
-- `x` - Input value (int or float)
-
-**Returns:**
-- Float value
+Converts to float explicitly to preserve precision in arithmetic.
 
 **Examples:**
-
-GenExpr:
-```scheme
-(float 3)         ; 3.0
-(/ (float 1) 2)   ; 0.5 (not 0 with int division)
-(float (+ 1 2))   ; 3.0
-```
-
-Codebox:
 ```c
-float(3)          // 3.0
-float(1) / 2      // 0.5 (vs 0 with int division)
+float(3);          // 3.0
+float(1) / 2;      // 0.5 (avoid int division)
+float(velocity) / 127.0;   // normalize MIDI velocity
 ```
 
 **Notes:**
-- Critical for division: (float 1) / 2 = 0.5, but 1 / 2 = 0 (integer division)
-- 32-bit float (same as signal type in Gen)
-- Implicit conversion often happens, but explicit helps clarity
+- Critical for division: `float(1) / 2 = 0.5` vs `1 / 2 = 0`
 
 ---
 
-## Boolean Conversion
+## Boolean Conversion `bool`
 
-### Cast to Boolean `bool`
-
-**Syntax:**
-```scheme
-; GenExpr
-(bool x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 bool(x)
 ```
 
 **Description:**
-Converts a value to boolean (0 or 1). Non-zero becomes 1, zero stays 0.
-
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- 0 or 1 (boolean)
+Converts to boolean (0 or 1). Non-zero becomes 1; zero stays 0.
 
 **Examples:**
-
-GenExpr:
-```scheme
-(bool 0)          ; 0
-(bool 1)          ; 1
-(bool 3)          ; 1 (any non-zero)
-(bool -1)         ; 1 (negative is non-zero)
-```
-
-Codebox:
 ```c
-bool(0)           // 0
-bool(1)           // 1
-bool(3)           // 1
+bool(0);           // 0
+bool(3);           // 1
+bool(-1);          // 1 (non-zero)
 ```
 
-**Notes:**
-- Any non-zero value becomes 1
-- Often implicit in conditional contexts
-- Equivalent to (? x 1 0)
+---
+
+## Raw Bit Reinterpretation
+
+**Syntax (GenExpr & Codebox):**
+```c
+int_bits(x);    // interpret float bits as int
+float_bits(x);  // interpret int bits as float
+```
+
+**Description:**
+Reinterprets underlying bits without numeric conversion. Advanced/rare.
 
 ---
 
 ## Common Conversion Patterns
 
 ### Safe Division (Ensure Float Result)
-```scheme
-; GenExpr
-; Integer division (unwanted)
-(/ 1 2)           ; 0 (integer)
-
-; Float division (correct)
-(/ (float 1) 2)   ; 0.5 (float)
-(/ 1.0 2)         ; 0.5 (literal float)
-
-; Codebox
-int result = 1 / 2;        // 0 (integer division)
-float result = float(1) / 2; // 0.5 (float division)
-float result = 1.0 / 2;    // 0.5 (float literal)
+```c
+int bad = 1 / 2;                 // 0 (integer division)
+float ok = float(1) / 2;         // 0.5
+float ok2 = 1.0 / 2;             // 0.5 (float literal)
 ```
 
 ### Integer Array Index
-```scheme
-; GenExpr
-; Must be integer for table access
-index = (int (scale param 0 1 0 table-size))
-table-value = (lookup table index)
-
-; Codebox
+```c
 index = int(scale(param, 0, 1, 0, table_size));
 table_value = lookup(table, index);
 ```
 
 ### Boolean Gate
-```scheme
-; GenExpr
-; Convert comparison to 0/1 gate
-gate = (bool (> input threshold))
-output = (* signal gate)
-
-; Codebox
+```c
 gate = bool(input > threshold);
 output = signal * gate;
 ```
 
 ### Type Promotion for Precision
-```scheme
-; GenExpr
-; Ensure float arithmetic
-result = (/ (float count) total)
-percentage = (* 100 result)
-
-; Codebox
+```c
 result = float(count) / total;
 percentage = 100 * result;
 ```
 
-### MIDI Velocity Normalization
-```scheme
-; GenExpr
-; Convert MIDI integer to normalized float
-normalized = (/ (float velocity) 127)
-
-; Codebox
-normalized = float(velocity) / 127.0;
-```
-
 ### Sample-to-Second Conversion
-```scheme
-; GenExpr
-; Convert sample count to seconds
-seconds = (/ (float sample-count) samplerate)
-
-; Codebox
+```c
 seconds = float(sample_count) / samplerate;
 ```
 
 ### Time-Based Fade
-```scheme
-; GenExpr
-; Integer sample count, float seconds
-time-sec = (/ (float sample-index) samplerate)
-fade = (min 1 (* time-sec fade-rate))
-
-; Codebox
+```c
 time_sec = float(sample_index) / samplerate;
 fade = min(1, time_sec * fade_rate);
 ```
 
 ### Bitwise Operations (Require Integer)
-```scheme
-; GenExpr
-; Convert to int for bit operations
-int-value = (int input)
-bit-masked = (& int-value 0xFF)
-
-; Codebox
+```c
 int value = int(input);
-value = value & 0xFF;
+value = value & 0xFF;   // mask to 8 bits
 ```
 
 ---
 
-## Type Inference and Automatic Conversion
-
-Gen automatically infers types in most cases:
+## Type Inference (Automatic Promotion)
 
 | Operation | Input Types | Output Type |
 |-----------|-------------|-------------|
-| int + int | int, int | int |
-| int + float | int, float | float |
-| float + float | float, float | float |
-| int * float | int, float | float |
-| / (division) | int, int | int (integer division) |
-| / (division) | any float | float |
-
-**Example:**
-
-GenExpr:
-```scheme
-(+ 1 2)           ; int + int = int (3)
-(+ 1.0 2)         ; float + int = float (3.0)
-(/ 1 2)           ; int / int = int (0)
-(/ 1.0 2)         ; float / int = float (0.5)
-```
-
----
-
-## Integer Bit Interpretation
-
-### Raw Bit Cast (Advanced)
-
-**Syntax:**
-```scheme
-; GenExpr
-(int-bits x)      ; Interpret float bits as integer
-(float-bits x)    ; Interpret integer bits as float
-```
-
-**Description:**
-Raw reinterpretation of bits without numeric conversion. Advanced use only.
-
-**Parameters:**
-- `x` - Value to reinterpret
-
-**Returns:**
-- Bits reinterpreted as different type
+| `int + int` | int, int | int |
+| `int + float` | int, float | float |
+| `float + float` | float, float | float |
+| `int * float` | int, float | float |
+| `int / int` | int, int | int (integer division) |
+| `any / float` | any, float | float |
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Get IEEE 754 representation
-bits = (int-bits 1.0)  ; 1065353216 (0x3F800000)
-
-; Recover float from bits
-value = (float-bits bits)
+```c
+1 + 2;         // int (3)
+1.0 + 2;       // float (3.0)
+1 / 2;         // int (0)
+1.0 / 2;       // float (0.5)
 ```
-
-**Notes:**
-- Rarely needed in audio processing
-- Used for low-level bit manipulation
-- Preserves bit pattern, not numeric value
 
 ---
 
@@ -309,8 +153,8 @@ value = (float-bits bits)
 | `int()` | ~1 cycle | Type conversion |
 | `float()` | ~1 cycle | Type conversion |
 | `bool()` | ~1 cycle | Conversion to 0/1 |
-| `int-bits` | ~1 cycle | Raw bit reinterpretation |
-| `float-bits` | ~1 cycle | Raw bit reinterpretation |
+| `int_bits` | ~1 cycle | Raw bit reinterpretation |
+| `float_bits` | ~1 cycle | Raw bit reinterpretation |
 
 ---
 
@@ -318,4 +162,3 @@ value = (float-bits bits)
 
 - [Concepts: Type System](../concepts/types.md) - Type inference details
 - [Arithmetic](./arithmetic.md) - Division (int vs float)
-- [Rounding](./rounding.md) - floor, ceil, trunc, fract

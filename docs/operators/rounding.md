@@ -6,85 +6,47 @@ Operations for converting and rounding numeric values.
 
 ### Floor `floor`
 
-**Syntax:**
-```scheme
-; GenExpr
-(floor x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 floor(x)
 ```
 
 **Description:**
 Returns the largest integer less than or equal to x (rounds down).
 
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Floor of x (integer type)
-
 **Examples:**
-
-GenExpr:
-```scheme
-(floor 3.7)       ; 3
-(floor 3.2)       ; 3
-(floor -2.3)      ; -3 (rounds down, toward negative)
-```
-
-Codebox:
 ```c
-floor(3.7)        // 3
-floor(3.2)        // 3
-floor(-2.3)       // -3
+floor(3.7);        // 3
+floor(3.2);        // 3
+floor(-2.3);       // -3 (toward negative)
 ```
 
 **Notes:**
 - Always rounds toward negative infinity
-- floor(-2.3) = -3, not -2
+- `floor(-2.3) = -3`, not -2
 
 ---
 
 ### Ceil `ceil`
 
-**Syntax:**
-```scheme
-; GenExpr
-(ceil x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 ceil(x)
 ```
 
 **Description:**
 Returns the smallest integer greater than or equal to x (rounds up).
 
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Ceiling of x (integer type)
-
 **Examples:**
-
-GenExpr:
-```scheme
-(ceil 3.2)        ; 4
-(ceil 3.7)        ; 4
-(ceil -2.3)       ; -2 (rounds up, toward positive)
-```
-
-Codebox:
 ```c
-ceil(3.2)         // 4
-ceil(3.7)         // 4
-ceil(-2.3)        // -2
+ceil(3.2);         // 4
+ceil(3.7);         // 4
+ceil(-2.3);        // -2 (toward positive)
 ```
 
 **Notes:**
 - Always rounds toward positive infinity
-- ceil(-2.3) = -2, not -3
+- `ceil(-2.3) = -2`, not -3
 
 ---
 
@@ -92,39 +54,20 @@ ceil(-2.3)        // -2
 
 ### Round to Nearest `round`
 
-**Syntax:**
-```scheme
-; GenExpr
-(round x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 round(x)
 ```
 
 **Description:**
 Rounds to nearest integer. Halfway values (.5) round away from zero.
 
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Nearest integer
-
 **Examples:**
-
-GenExpr:
-```scheme
-(round 3.4)       ; 3
-(round 3.5)       ; 4 (away from zero)
-(round 3.6)       ; 4
-(round -2.5)      ; -3 (away from zero)
-```
-
-Codebox:
 ```c
-round(3.4)        // 3
-round(3.5)        // 4
-round(-2.5)       // -3
+round(3.4);        // 3
+round(3.5);        // 4 (away from zero)
+round(3.6);        // 4
+round(-2.5);       // -3 (away from zero)
 ```
 
 **Notes:**
@@ -135,41 +78,23 @@ round(-2.5)       // -3
 
 ### Truncate `trunc`
 
-**Syntax:**
-```scheme
-; GenExpr
-(trunc x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 trunc(x)
 ```
 
 **Description:**
 Truncates to integer by removing fractional part (rounds toward zero).
 
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Truncated integer
-
 **Examples:**
-
-GenExpr:
-```scheme
-(trunc 3.7)       ; 3 (toward zero)
-(trunc -2.7)      ; -2 (toward zero, not -3)
-```
-
-Codebox:
 ```c
-trunc(3.7)        // 3
-trunc(-2.7)       // -2
+trunc(3.7);        // 3
+trunc(-2.7);       // -2 (toward zero)
 ```
 
 **Notes:**
 - Different from floor for negative numbers
-- floor(-2.7) = -3, trunc(-2.7) = -2
+- `floor(-2.7) = -3`, `trunc(-2.7) = -2`
 
 ---
 
@@ -177,43 +102,24 @@ trunc(-2.7)       // -2
 
 ### Fraction `fract`
 
-**Syntax:**
-```scheme
-; GenExpr
-(fract x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 fract(x)
 ```
 
 **Description:**
-Returns the fractional part of x (x - floor(x)). Always returns 0 to 1.
-
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Fractional part (range [0, 1))
+Returns the fractional part of x (`x - floor(x)`). Always returns 0 to 1.
 
 **Examples:**
-
-GenExpr:
-```scheme
-(fract 3.7)       ; 0.7
-(fract 3.2)       ; 0.2
-(fract -2.3)      ; 0.7 (not -0.3)
-```
-
-Codebox:
 ```c
-fract(3.7)        // 0.7
-fract(3.2)        // 0.2
-fract(-2.3)       // 0.7
+fract(3.7);        // 0.7
+fract(3.2);        // 0.2
+fract(-2.3);       // 0.7 (not -0.3)
 ```
 
 **Notes:**
-- Equivalent to x - floor(x)
-- For negative numbers: fract(-2.3) = -2.3 - floor(-2.3) = -2.3 - (-3) = 0.7
+- Equivalent to `x - floor(x)`
+- For negative numbers: `fract(-2.3) = -2.3 - floor(-2.3) = 0.7`
 
 ---
 
@@ -221,84 +127,45 @@ fract(-2.3)       // 0.7
 
 ### Integer Conversion `int`
 
-**Syntax:**
-```scheme
-; GenExpr
-(int x)
-(int-bits x)      ; Alternative syntax
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 int(x)
 ```
 
 **Description:**
 Converts to integer type. Truncates fractional part (toward zero).
 
-**Parameters:**
-- `x` - Input value
-
-**Returns:**
-- Integer value
-
 **Examples:**
-
-GenExpr:
-```scheme
-(int 3.7)         ; 3
-(int 3.2)         ; 3
-(int -2.7)        ; -2
-```
-
-Codebox:
 ```c
-int(3.7)          // 3
-int(-2.7)         // -2
+int(3.7);          // 3
+int(3.2);          // 3
+int(-2.7);         // -2
 ```
 
 **Notes:**
-- Same behavior as trunc
+- Same behavior as `trunc`
 - Explicit type conversion (usually automatic)
 
 ---
 
 ### Float Conversion `float`
 
-**Syntax:**
-```scheme
-; GenExpr
-(float x)
-(float-bits x)    ; Alternative syntax
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 float(x)
 ```
 
 **Description:**
-Converts to float type explicitly. Allows mathematical operations on integers.
-
-**Parameters:**
-- `x` - Input value (int or float)
-
-**Returns:**
-- Float value
+Converts to float type explicitly. Useful to avoid integer division and enforce precision.
 
 **Examples:**
-
-GenExpr:
-```scheme
-(float 3)         ; 3.0
-(/ (float 1) 2)   ; 0.5 (not 0 with int division)
-```
-
-Codebox:
 ```c
-float(3)          // 3.0
-float(1) / 2      // 0.5
+float(3);          // 3.0
+float(1) / 2;      // 0.5 (avoid integer division)
 ```
 
 **Notes:**
-- Forces float division: (/ 1 2) = 0, (/ (float 1) 2) = 0.5
-- Useful for ensuring precision
+- Forces float division: `float(1) / 2 = 0.5` vs `1 / 2 = 0`
 
 ---
 
@@ -318,66 +185,34 @@ float(1) / 2      // 0.5
 ## Common Patterns
 
 ### Quantize to Grid
-```scheme
-; GenExpr
-; Quantize to nearest grid step
-quantized = (* (round (/ x step)) step)
-
-; Codebox
-quantized = round(x / step) * step;
+```c
+quantized = round(x / step) * step;   // nearest grid step
 ```
 
 ### Sample-Rate-Safe Integer Division
-```scheme
-; GenExpr
-; Avoid integer division pitfall
-result = (/ (float numerator) denominator)
-
-; Codebox
-result = float(numerator) / denominator;
+```c
+result = float(numerator) / denominator;   // avoid int division truncation
 ```
 
 ### Frequency Quantization
-```scheme
-; GenExpr
-; Snap frequency to nearest semitone
-midi-note = (round (+ 69 (* 12 (log2 (/ freq 440)))))
-quantized-freq = (* 440 (exp2 (/ (- midi-note 69) 12)))
-
-; Codebox
+```c
 midi_note = round(69 + 12 * log2(freq / 440));
 quantized_freq = 440 * exp2((midi_note - 69) / 12.0);
 ```
 
 ### Get Whole and Fractional Parts
-```scheme
-; GenExpr
-whole = (trunc x)
-fract-part = (fract x)
-
-; Codebox
+```c
 whole = trunc(x);
 fract_part = fract(x);
 ```
 
 ### Safe Integer Arithmetic
-```scheme
-; GenExpr
-; Ensure float result
-percentage = (* 100 (/ (float count) total))
-
-; Codebox
-percentage = 100 * float(count) / total;
+```c
+percentage = 100 * float(count) / total;   // force float math
 ```
 
 ### Bit Depth Reduction (Bitcrushing)
-```scheme
-; GenExpr
-bit-depth = 8
-levels = (pow 2 bit-depth)
-crushed = (/ (float (floor (* in levels))) levels)
-
-; Codebox
+```c
 bit_depth = 8;
 levels = pow(2, bit_depth);
 crushed = floor(in * levels) / levels;
@@ -390,7 +225,7 @@ crushed = floor(in * levels) / levels;
 | Function | Speed | Notes |
 |----------|-------|-------|
 | `floor`, `ceil`, `round`, `trunc` | ~5 cycles | Fast integer operations |
-| `fract` | ~5 cycles | x - floor(x) |
+| `fract` | ~5 cycles | `x - floor(x)` |
 | `int`, `float` | ~1 cycle | Type conversion (often free) |
 
 ---

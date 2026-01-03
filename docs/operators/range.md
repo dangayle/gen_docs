@@ -6,12 +6,8 @@ Operations for constraining, wrapping, and transforming values within ranges.
 
 ### Clamp `clamp`
 
-**Syntax:**
-```scheme
-; GenExpr
-(clamp x min max)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 clamp(x, min, max)
 ```
 
@@ -27,29 +23,10 @@ Constrains a value to stay within a specified range. Values below min become min
 - Clamped value (always between min and max)
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Clamp to 0-1 range
-(clamp x 0 1)
-
-; Clamp audio to prevent clipping
-(clamp in -1 1)
-
-; Gate with soft limits
-(clamp gain 0 0.5)
-```
-
-Codebox:
 ```c
-// Clamp to 0-1
-y = clamp(x, 0, 1);
-
-// Prevent clipping
-y = clamp(x, -1, 1);
-
-// Limit gain
-y = clamp(gain, 0, 0.5);
+out = clamp(in, 0, 1);          // Clamp to 0-1 range
+out = clamp(in, -1, 1);         // Prevent clipping
+out = clamp(gain, 0, 0.5);      // Limit gain
 ```
 
 **Notes:**
@@ -63,12 +40,8 @@ y = clamp(gain, 0, 0.5);
 
 ### Wrap `wrap`
 
-**Syntax:**
-```scheme
-; GenExpr
-(wrap x min max)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 wrap(x, min, max)
 ```
 
@@ -84,26 +57,10 @@ Wraps a value to stay within range. Value exceeding max wraps to min, value belo
 - Wrapped value
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Wrap phase (0 to 1)
-(wrap phase 0 1)
-
-; Wrap angle (0 to 2π)
-(wrap angle 0 twopi)
-
-; Wrap table index
-(wrap index 0 table-size)
-```
-
-Codebox:
 ```c
-// Wrap phase
-phase = wrap(phase, 0, 1);
-
-// Wrap angle
-angle = wrap(angle, 0, twopi);
+phase = wrap(phase, 0, 1);            // Wrap phase 0..1
+angle = wrap(angle, 0, twopi);        // Wrap angle 0..2pi
+index = wrap(index, 0, table_size);   // Wrap table index
 ```
 
 **Notes:**
@@ -117,12 +74,8 @@ angle = wrap(angle, 0, twopi);
 
 ### Fold `fold`
 
-**Syntax:**
-```scheme
-; GenExpr
-(fold x min max)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 fold(x, min, max)
 ```
 
@@ -138,23 +91,9 @@ Folds a value within range. Value exceeding max bounces back toward min, like a 
 - Folded value
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Fold oscillator (creates triangle from saw)
-(fold phase 0 1)
-
-; Fold modulated value
-(fold (+ center modulation) 0 1)
-```
-
-Codebox:
 ```c
-// Fold oscillator
-y = fold(phase, 0, 1);
-
-// Fold modulated signal
-y = fold(center + modulation, 0, 1);
+out = fold(phase, 0, 1);                 // triangle from saw
+out = fold(center + modulation, 0, 1);   // fold modulated value
 ```
 
 **Notes:**
@@ -168,12 +107,8 @@ y = fold(center + modulation, 0, 1);
 
 ### Scale `scale`
 
-**Syntax:**
-```scheme
-; GenExpr
-(scale x in-min in-max out-min out-max [curve])
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 scale(x, in_min, in_max, out_min, out_max)
 scale(x, in_min, in_max, out_min, out_max, curve)
 ```
@@ -193,29 +128,10 @@ Maps a value from one range to another. Optionally applies exponential curve.
 - Scaled value
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Normalize input to 0-1
-(scale in -1 1 0 1)
-
-; Map parameter to frequency (exponential)
-(scale param 0 1 100 10000 2)
-
-; Convert MIDI velocity to gain
-(scale velocity 0 127 0 1)
-```
-
-Codebox:
 ```c
-// Normalize
-y = scale(x, -1, 1, 0, 1);
-
-// Exponential mapping
-freq = scale(param, 0, 1, 100, 10000, 2);
-
-// Linear MIDI to gain
-gain = scale(velocity, 0, 127, 0, 1);
+out = scale(in, -1, 1, 0, 1);                 // normalize to 0-1
+freq = scale(param, 0, 1, 100, 10000, 2);     // exponential mapping
+gain = scale(velocity, 0, 127, 0, 1);         // MIDI velocity to gain
 ```
 
 **Notes:**
@@ -230,12 +146,8 @@ gain = scale(velocity, 0, 127, 0, 1);
 
 ### Step `step`
 
-**Syntax:**
-```scheme
-; GenExpr
-(step threshold x)
-
-; Codebox
+**Syntax (GenExpr & Codebox):**
+```c
 step(threshold, x)
 ```
 
@@ -250,23 +162,9 @@ Returns 0 if x < threshold, 1 if x >= threshold.
 - 0 or 1 (boolean)
 
 **Examples:**
-
-GenExpr:
-```scheme
-; Simple gate
-(step 0.1 in)
-
-; Create square wave from sine
-(step 0 (sin (* phase twopi)))
-```
-
-Codebox:
 ```c
-// Gate at threshold
-y = step(0.1, x);
-
-// Square wave from sine
-y = step(0, sin(phase * twopi));
+out = step(0.1, in);                 // gate at threshold
+square = step(0, sin(phase * twopi));
 ```
 
 **Notes:**
@@ -291,95 +189,49 @@ y = step(0, sin(phase * twopi));
 ## Common Patterns
 
 ### Constrain Audio to Prevent Clipping
-```scheme
-; GenExpr
-(clamp (+ in feedback) -1 1)
-
-; Codebox
-y = clamp(x + feedback, -1, 1);
+```c
+out = clamp(in + feedback, -1, 1);
 ```
 
 ### Normalize to 0-1 Range
-```scheme
-; GenExpr
-normalized = (scale input min-input max-input 0 1)
-
-; Codebox
+```c
 normalized = scale(input, min_input, max_input, 0, 1);
 ```
 
 ### Exponential Frequency Mapping
-```scheme
-; GenExpr
-; Map 0-1 parameter to 20Hz-20kHz with exponential curve
-freq = (scale param 0 1 20 20000 2)
-
-; Codebox
-freq = scale(param, 0, 1, 20, 20000, 2);
+```c
+freq = scale(param, 0, 1, 20, 20000, 2);   // 0-1 to 20Hz-20kHz
 ```
 
 ### Triangle Oscillator via Fold
-```scheme
-; GenExpr
-; Sawtooth wrapped/folded becomes triangle
-(fold (phasor freq) 0 1)
-
-; Codebox
-y = fold(phasor(freq), 0, 1);
+```c
+out = fold(phasor(freq), 0, 1);    // saw -> triangle
 ```
 
 ### Soft Saturation (without clamp)
-```scheme
-; GenExpr
-; Smooth curve without hard clipping
-(tanh (* in drive))
-
-; Codebox
-y = tanh(x * drive);
+```c
+out = tanh(in * drive);
 ```
 
 ### Gate with Threshold
-```scheme
-; GenExpr
-; Gate if above threshold
-(* in (step threshold (abs in)))
-
-; Codebox
-y = x * step(threshold, abs(x));
+```c
+out = in * step(threshold, abs(in));
 ```
 
 ### Logarithmic Control Scaling
-```scheme
-; GenExpr
-; Exponential curve for frequency knob
-(scale (pow param-0-1 2) 0 1 100 20000)
-
-; Codebox
+```c
 freq = scale(pow(param, 2), 0, 1, 100, 20000);
 ```
 
 ### MIDI Velocity to Amplitude
-```scheme
-; GenExpr
-; Map 0-127 to 0-1 linearly
-amp = (scale velocity 0 127 0 1)
-
-; Exponential velocity curve
-amp = (scale (pow (/ velocity 127) 2) 0 1 0 1)
-
-; Codebox
-amp = scale(velocity, 0, 127, 0, 1);
-amp = scale(pow(velocity / 127.0, 2), 0, 1, 0, 1);
+```c
+amp = scale(velocity, 0, 127, 0, 1);                 // linear
+amp = scale(pow(velocity / 127.0, 2), 0, 1, 0, 1);   // curved
 ```
 
 ### Clamp with Soft Knees
-```scheme
-; GenExpr
-; Smooth clamping using smoothstep
-(smoothstep 0 0.1 (clamp x 0 1))
-
-; Codebox
-y = smoothstep(0, 0.1, clamp(x, 0, 1));
+```c
+out = smoothstep(0, 0.1, clamp(x, 0, 1));
 ```
 
 ---
